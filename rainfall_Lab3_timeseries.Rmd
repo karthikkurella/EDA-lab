@@ -1,0 +1,136 @@
+#### Essentials of Data Analytics - LAB3
+#### 17MIS1020 - Karthik Prasad
+#### Time series Data
+
+
+
+Steps to follow:
+
+1. Make sure that the dataset can be described using additve model. i.e, seasonality and random fluctuations should remains constant in size over time. if not transform data using 'log'.
+
+2. decomposing time series - separating into constituent components - trend , random , seasonal(if data is seasonal).
+
+
+Decomposing non-seasonal data
+
+- moving average method - Smoothing method - SMA(data , n = ) - TTR Package
+if we still have any random fluctuations in the data try increasing n value.
+
+Decomposing Seasonal data
+
+- decompose command in r
+here we can deseasonalise the data by substracting the decomposed data with the original(data - decomposed_data$seasonal).
+
+3. make predictions
+ 
+
+```{r}
+library(astsa, quietly=TRUE, warn.conflicts=FALSE)
+library(ggplot2)
+library(knitr)
+library(printr)
+library(plyr)
+library(dplyr)
+library(tidyverse)
+library(lubridate)
+library(gridExtra)
+library(reshape2)
+library(TTR)
+library(tseries)
+library(forecast)
+library(ggfortify)
+
+```
+
+
+```{r}
+df = read.csv("rainfall_1901-2015.csv")
+str(df)
+head(df)
+```
+
+
+```{r}
+#extracting rainfall details in telangana state
+
+telangana <-df%>%filter(SUBDIVISION=="TELANGANA" & YEAR %in% c(1910:1920))%>%group_by(SUBDIVISION,YEAR) 
+
+
+telangana=telangana[,-c(1,15,16,17,18,19)]
+
+head(telangana)
+nrow(telangana)
+telangana = telangana %>%
+  pivot_longer(!YEAR, names_to = "month", values_to = "Rain")
+
+
+nrow(telangana)
+
+telangana
+data = ts(telangana[,3],frequency = 12,start = c(1910,1))
+
+head(data)
+
+plot.ts(data)
+#plot.ts(log(data))
+
+boxplot(data~cycle(data),xlab="Date", ylab = "Rain" ,main ="Monthly Rainfall Boxplot from 1901 to 1950")
+
+```
+
+
+```{r}
+decompose_data = decompose(data,"multiplicative")
+plot(decompose_data)
+
+#testing for stationary
+
+adf.test(data) 
+
+
+```
+
+```{r}
+autoplot(data) + geom_smooth(method="lm")+ labs(x ="Date", y = "Passenger numbers (1000's)", title="Air Passengers from 1949 to 1961")
+
+
+arima_data <- auto.arima(data)
+arima_data
+
+ggtsdiag(arima_data)
+
+forecast_data <- forecast(arima_data, level = c(95), h = 36)
+autoplot(forecast_data)
+
+```
+
+
+```{r}
+final <- SMA(rainSeasonAdj, n=6)
+plot.ts(final)
+
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+
+
+```{r}
+```
+

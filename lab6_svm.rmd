@@ -1,0 +1,18 @@
+```{r}
+library(e1071)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+setwd('E:\\Sems\\sem-8\\essentials of data analytics\\lab\\lab_6svm\\')
+train<- read.csv("train.csv")
+test<-read.csv("test.csv")
+```
+```{r}
+glimpse(train)
+```
+```{r}
+sum(is.na(train$PassengerId))
+```
+

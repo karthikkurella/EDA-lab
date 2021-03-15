@@ -1,0 +1,67 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+# Lab Exercise-4 (Essentials of Data Analytics)
+### Karthik Kurella
+### 17MIS1022
+### Date : 22-Feb-2021
+
+```{r,echo=FALSE}
+library(ISLR)
+library(corrplot)
+library(dplyr)
+library(caret)
+
+```
+* Logistic Regression
+* Logistic regression is another technique by machine learning.It measures the relationship between the categorical dependent variable and one or more independent variables by estimating probabilities using a logistic function, which is the cumulative logistic distribution.
+```{r}
+#data()
+names(Smarket)
+head(Smarket)
+```
+* Exploring Data:
+* Let's explore it for a bit. names() is useful for seeing what's on the data frame, head() is a glimpse of the first few rows, and summary() is also useful.
+```{r}
+summary(Smarket)
+
+```
+* Correlation
+* Calculating the correlation between each pair of numeric variables. These pair-wise correlations can be plotted in a correlation matrix plot to given an idea of which variables change together.
+
+```{r}
+
+correlations <- cor(Smarket[,1:8])
+corrplot(correlations, method="circle")
+```
+```{r}
+training.samples <- Smarket$Direction %>% createDataPartition(p = 0.8, list = FALSE)
+train <- Smarket[training.samples, ]
+test <- Smarket[-training.samples, ]
+```
+
+```{r}
+model_glm <- glm(Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, data = train, family = binomial)
+```
+
+```{r}
+summary(model_glm)
+```
+
+* Predictions and Confusion Matrix
+
+```{r}
+glm.probs <- predict(model_glm,type = "response")
+table(train$Direction, glm.probs > 0.5)
+
+```
+* GGplot Curve
+
+```{r}
+library(ggplot2)
+ggplot(train, aes(x=Lag1, y=Direction)) + geom_point() + 
+stat_smooth(method="glm", family="binomial", se=FALSE)
+```
+

@@ -1,0 +1,50 @@
+---
+title: "lab4"
+author: "meghana(17mis1187)"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+data<-read.csv("C://Users//koush//Desktop//clg//8th sem//framingham.csv")
+str(data)
+```
+
+
+```{r}
+library(caTools)
+library(ISLR)
+library(dplyr)
+library(caret)
+training.samples <- data$TenYearCHD %>%createDataPartition(p = 0.8, list = FALSE)
+train <- data[training.samples, ]
+test <- data[-training.samples, ]
+```
+
+```{r}
+summary(data)
+```
+
+
+```{r}
+xtabs(~TenYearCHD,data=data)
+
+```
+#0: represents no.
+#1: represents yes.
+
+```{r}
+logit <- glm(TenYearCHD~.,data=data,family="binomial")
+ 
+ summary(logit)
+```
+```{r}
+logit <- glm(TenYearCHD~.-education-currentSmoker-BPMeds-prevalentStroke-diabetes-diaBP-BMI-heartRate-prevalentHyp,data=data,family="binomial")
+ 
+ summary(logit)
+```
+#this function returns the estimate, standard errors, z-score, and p-values on each of the coefficients. Look like none of the coefficients are significant here. It also gives you the null deviance (the deviance just for the mean) and the residual deviance (the deviance for the model with all the predictors). There's a very small difference between the two, along with 6 degrees of freedom.

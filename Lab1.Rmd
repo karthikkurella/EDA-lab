@@ -1,0 +1,188 @@
+#### Essentials of Data Analytics - LAB1
+#### 17MIS1020 - Karthik Prasad
+#### Simple Linear Regression
+
+
+
+* Loading the dataset
+
+```{r}
+data1=read.csv("kc_house_data.csv")
+```
+
+
+
+
+* In general, we can say that Price of a house is dependent on many factors like Number of rooms , sqfts , area located in, etc., In the dataset, we can see many independent features, but here i am considering only one indpendent variable. sqft is an independent feature as it can exist without depending on other features i.e, sqft doesn't change when other features changes..
+
+* Price  is a dependent feature, which varies according with sqft(either increase/decrease). So i am taking sqft_living(living room) as independent feature and price as dependent feature. 
+
+* Seperating both the fields to a separate dataframe..
+
+
+
+
+```{r}
+str(data1)
+sqft_living= data1$sqft_living
+price=data1$price
+```
+
+
+```{r}
+
+data = data.frame(sqft_living,price)
+head(data)
+
+```
+
+
+
+* Split the dataset into train/test. This helps in evaluating the model.But as far as now, i am concentrating only on building the model statistically.
+
+
+```{r}
+library(caTools)
+library(dplyr)
+library(caret)
+training.samples <- data$price %>%createDataPartition(p = 0.7, list = FALSE)
+train <- data[training.samples, ]
+test <- data[-training.samples, ]
+
+```
+
+```{r}
+nrow(test)
+```
+
+
+* y = m*x + c is the equation of best fitting line where m is slope and c is y-intercept.This equation can be used to predict the price of house given sqft_living.
+* m can be caluclated using the formula Covariance(x,y) / Variance(x)
+* c can be caluclated by substituting the mean values of (x,y) in the equation and m value.
+* Caluclating Covariance
+
+
+
+```{r}
+# y = mx+c
+mean_x =sum(train$sqft_living) / nrow(train)
+mean_y=sum(train$price) / nrow(train)
+
+
+library(ggplot2)
+ggplot(train)+geom_point(mapping = aes(x=sqft_living,y=price))
+
+
+cov_xy =0
+
+for(i in seq(length(train$sqft_living))){
+  
+  mean_diffx = train$sqft_living[i] - mean_x
+  mean_diffy = train$price[i] - mean_y
+  cov_xy= cov_xy+mean_diffx*mean_diffy
+  
+}
+
+cov_xy
+```
+
+
+* Caluclating Variance
+
+
+```{r}
+
+variance<-function(x){
+  var_xy = 0  
+  for(i in seq(length(x)))
+    {
+  
+    s = x[i] - mean_x
+    var_xy= var_xy+s*s
+    
+  
+  }
+  print(var_xy)
+  
+  
+
+}
+
+
+
+variance(train$sqft_living)
+
+```
+
+
+* m and c values are caluclated
+
+```{r}
+
+m = cov_xy / variance(train$sqft_living) 
+m
+
+c = mean_y - m*(mean_x)
+c
+
+```
+
+
+
+* Predicting the house price of a house whose sqft_living = 1180 using the line equation => 288508.7
+
+```{r}
+
+
+predictor<-function(x){
+  val = m*x+c
+  print(val)
+}
+
+predictor(1180)
+
+
+
+```
+
+
+* Now verifying the statistically calculated values with the regression libraries available in r(lm).
+
+* m and c values can be observed in the summary of model. These values are same as of the mathematically caluclated values(277.9,-39471.189).
+
+
+```{r}
+library(caret)
+colnames(train)
+
+
+model<- lm(price~sqft_living,data=train)
+summary(model)
+
+
+```
+
+* Now predicting the price of house for the same sqft_living values taken above(1180). we can see that Both the predicted values are same(288508). 
+
+```{r}
+head(train)
+data_val = data.frame(sqft_living = 1180)
+data_val
+
+pred = model %>% predict(data_val)
+pred
+
+
+```
+
+
+
+* But we can see a huge difference in predicted values and actual values for sqft_living = 1180 (221900 , 288508) and also the RMSE value is extremely high(263031.7). This fluctuation is because, we have only considered sqft_living as independent variable for price though there are many other variables that price depends on(sqft_above,sqft_basement,sqft_above,...). Multiple Linear Regression can be used to overcome this error.
+
+
+
+```{r}
+pred1 = model %>% predict(test)
+RMSE(pred1,test$price)
+```
+

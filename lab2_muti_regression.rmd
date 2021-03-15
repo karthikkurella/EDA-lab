@@ -1,0 +1,83 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+# Lab Exercise (Essentials of Data Analytics)
+### Karthik Kurella
+### 17MIS1022
+### Date : 15-Feb-2021
+```{r,echo=FALSE}
+library(ggpubr)
+library(MASS)
+library(caTools)
+library(dplyr)
+library(caret)
+library(ggplot2)
+
+```
+
+* Steps 
+* In regression analysis you try to fit a predictive model to your data and use that model to predict an outcome variable from one or more independent predictor variables. With simple regression you try to predict an outcome variable from a single predictor variable and with multiple regression you try to predict an outcome variable from multiple predictor variables.
+
+* This predictive model uses a straight line to summarize the data and the method of least squares is used to get the linear line that gives the description (best fit) of the data
+
+```{r}
+str(mtcars)
+```
+* Checking for the outlier in the given target
+```{r}
+boxplot(mtcars$mpg,ylab="miles per galon",main="outlier detection")
+```
+
+```{r}
+training.samples <- mtcars$mpg %>%createDataPartition(p = 0.7, list = FALSE)
+train <- mtcars[training.samples, ]
+test <- mtcars[-training.samples, ]
+```
+* Multiple regression
+* The formula for multiple regression looks as follows:
+
+* Yi=(b0+b1X1+b2X2+...+bnXn)+ei 
+* Y  is the outcome variable,  b1  is the coefficient for the first predictor ( X1 ),  b2  is the coefficient for the second predictor ( X2 ) and  bn  is the coefficient for the nth predictor ( Xn ).  bo  is the intercept, the point were the regression line crosses the y-axis. Ei is the difference between the predicted and the observed value of  Y  for the ith participant. Lets put this into practice by adding a second variable to our model, for example body mass index (BMI). Here is how the model looks like:
+
+```{r}
+model <- lm(mpg ~ disp + hp + drat + wt, mtcars)
+summary(model)
+```
+* In the output we see that we have a multiple R-squared of 0.8376, this means that our model explains 11.72% of the variation in the outcome variable. Multiple R-squared can range from 1 to 0, were 1 means that the model perfectly fits the observed data and explains 100% of the variation in the outcome variable. In our model with only the predictor age, the R-squared was 0.8376. 
+
+* Error measures considering all the features of the mpgcars
+```{r}
+pred1 = model %>% predict(test)
+x=RMSE(pred1,test$mpg)
+x
+sigma(model)/mean(mtcars$mpg)
+x/mean(test$mpg)
+```
+
+
+```{r}
+model1<- lm(mpg ~ disp + drat , mtcars)
+summary(model1)
+```
+
+* Residual Standard Error (RSE), or sigma:
+
+* The RSE estimate gives a measure of error of prediction. The lower the RSE, the more accurate the model (on the data in hand).
+
+* The error rate can be estimated by dividing the RSE by the mean outcome variable:
+```{r}
+pred1 = model1 %>% predict(test)
+x=RMSE(pred1,test$mpg)
+x
+sigma(model1)/mean(mtcars$mpg)
+x/mean(test$mpg)
+```
+* ANOVA TEST 
+```{r}
+anova(model,model1)
+```
+* Conclusion
+* We see a p-value of 0.001, meaning that our old model gives a better prediction than the old model which uses disp, hp,drat and wt.
+

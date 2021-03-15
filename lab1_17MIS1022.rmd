@@ -1,0 +1,133 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+# Lab Exercise (Essentials of Data Analytics)
+### Karthik Kurella
+### 17MIS1022
+### Date : 08-Feb-2021
+```{r}
+library(tidyverse)
+library(ggpubr)
+library(MASS)
+library(caTools)
+library(dplyr)
+library(caret)
+```
+
+```{r}
+str(cars)
+scatter.smooth(x=cars$speed, y=cars$dist, main="Dist ~ Speed") 
+```
+```{r}
+boxplot(cars$speed, main="Speed", sub=paste("Outlier rows: ", boxplot.stats(cars$speed)$out))  # box plot for 'speed'
+boxplot(cars$dist, main="Distance", sub=paste("Outlier rows: ", boxplot.stats(cars$dist)$out))  # box plot for 'distance'
+```
+```{r}
+training.samples <- cars$dist %>%createDataPartition(p = 0.7, list = FALSE)
+train <- cars[training.samples, ]
+test <- cars[-training.samples, ]
+nrow(test)
+```
+
+* y = m*x + c is the equation of best fitting line where m is slope and c is y-intercept.This equation can be used to predict the distance of car travel.
+* m can be calculated using the formula Covariance(x,y) / Variance(x)
+* c can be calculated by substituting the mean values of (x,y) in the equation and m value.
+* Calculating Covariance
+```{r}
+# y = mx+c
+mean_x =sum(train$speed) / nrow(train)
+mean_y=sum(train$dist) / nrow(train)
+
+
+library(ggplot2)
+ggplot(train)+geom_point(mapping = aes(x=speed,y=dist))
+
+
+cov_xy =0
+
+for(i in seq(length(train$speed))){
+  
+  mean_diffx = train$speed[i] - mean_x
+  mean_diffy = train$dist[i] - mean_y
+  cov_xy= cov_xy+mean_diffx*mean_diffy
+  
+}
+
+cov_xy
+
+```
+* Variance
+```{r}
+
+variance<-function(x){
+  var_xy = 0  
+  for(i in seq(length(x)))
+    {
+  
+    s = x[i] - mean_x
+    var_xy= var_xy+s*s
+    
+  
+  }
+  print(var_xy)
+  
+  
+
+}
+
+
+
+variance(train$speed)
+
+```
+m (slope) and c (y-intercept)  are calculated.
+```{r}
+
+m = cov_xy / variance(train$speed) 
+m
+
+c = mean_y - m*(mean_x)
+c
+
+
+```
+* Predicting the distance by using the line equation 
+```{r}
+predictor<-function(x){
+  val = m*x+c
+  print(val)
+}
+
+predictor(10)
+
+```
+* Verifying calculated values with the regression libraries available in r(lm).
+
+m and c values can be observed in the summary of model. These values are same as of the mathematically caluclated values(3.7866,-15.6695).
+```{r}
+library(caret)
+colnames(train)
+model<- lm(dist~speed,data=train)
+summary(model)
+```
+* predicting the same in the R package(lm) for the cross validation
+```{r}
+val=data.frame(speed=10)
+val
+
+pred = model %>% predict(val)
+pred
+
+```
+* Error Measures(RMSE)
+```{r}
+pred1 = model %>% predict(test)
+RMSE(pred1,test$dist)
+
+```
+
+* Conclusion:
+* We can see that the programmed linear regression and the R(lm) package show similar values for the predictor value of speed(10), the RMSE value for this model of cars data is less. So in this way we can work, linear regression on the data set.
+

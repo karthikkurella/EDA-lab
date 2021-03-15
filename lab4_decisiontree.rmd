@@ -1,0 +1,90 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+# Lab Exercise-5 (Decision Trees)(Essentials of Data Analytics)
+### Karthik Kurella
+### 17MIS1022
+### Date : 01-March-2021
+
+```{r,echo=FALSE}
+library(ISLR)
+library(corrplot)
+library(dplyr)
+library(caret)
+library(tidyverse)
+
+```
+
+```{r}
+list.files(path="..")
+```
+
+```{r}
+loans = read.csv('loan_data.csv',header = TRUE)
+names(loans)
+glimpse(loans)
+```
+```{r}
+library(dplyr)
+# Drop variables
+loans <- loans %>%select(c(3,4,5,6,7,8,9,10)) %>% 
+#Convert to factor level
+	mutate(not.fully.paid = factor(not.fully.paid, levels = c(0, 1), labels = c('No', 'Yes'))) %>%na.omit()
+loans$purpose<-as.factor(loans$purpose)
+glimpse(loans)
+str(loans)
+summary(loans)
+unique(loans$credit.policy)
+```
+* Target variable
+```{r}
+#loans$not.fully.paid=as.factor(loans$not.fully.paid)
+set.seed(1234)
+shuffle_index <- sample(1:nrow(loans))
+#head(shuffle_index)
+loans<-loans[shuffle_index,]
+```
+
+```{r}
+#split the data into training set and test set
+create_train_test <- function(loans, size = 0.8, train = TRUE) {
+    n_row = nrow(data)
+    total_row = size * n_row
+    train_sample < 1: total_row
+    if (train == TRUE) {
+        return (loans[train_sample, ])
+    } else {
+        return (loans[-train_sample, ])
+    }
+}
+```
+
+```{r}
+training.samples <- loans$not.fully.paid %>% createDataPartition(p = 0.8, list = FALSE)
+train1 <- loans[training.samples, ]
+test1 <- loans[-training.samples, ]
+```
+
+```{r}
+prop.table(table(loans$not.fully.paid))
+```
+```{r}
+loans_tree = ctree(not.fully.paid ~ .,train1)
+plot(loans_tree, type="simple")
+```
+```{r}
+tab = table(predict(loans_tree),train1$not.fully.paid)
+tab
+```
+
+
+```{r}
+library(rpart)
+head(train1)
+library(rpart.plot)
+fit <- rpart(not.fully.paid~., data = train1, method = 'class')
+rpart.plot(fit)
+```
+

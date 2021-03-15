@@ -1,0 +1,106 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+# Lab Exercise-3 (Essentials of Data Analytics)
+### Karthik Kurella
+### 17MIS1022
+### Date : 22-Feb-2021
+
+Steps to follow:
+
+1. Make sure that the dataset can be described using additve model. i.e, seasonality and random fluctuations should remains constant in size over time. if not transform data using 'log'.
+
+2. decomposing time series - separating into constituent components - trend , random , seasonal(if data is seasonal).
+
+
+Decomposing non-seasonal data
+
+- moving average method - Smoothing method - SMA(data , n = ) - TTR Package
+if we still have any random fluctuations in the data try increasing n value.
+
+Decomposing Seasonal data
+
+- decompose command in r
+here we can deseasonalise the data by substracting the decomposed data with the original(data - decomposed_data$seasonal).
+
+3. make predictions
+```{r,echo=FALSE}
+library(astsa, quietly=TRUE, warn.conflicts=FALSE)
+library(ggplot2)
+library(knitr)
+library(printr)
+library(plyr)
+library(dplyr)
+library(tidyverse)
+library(lubridate)
+library(gridExtra)
+library(reshape2)
+library(TTR)
+library(tseries)
+library(forecast)
+library(ggfortify)
+library(caret)
+```
+
+```{r}
+#data()
+
+data_master <- read.csv("E:/Sems/sem-8/essentials of data analytics/lab/GSPC.csv")
+str(data_master)
+```
+```{r}
+sp_500 <- ts(data_master$High, start=c(1995, 1),end = c(2016,12), freq=12)
+summary(sp_500)
+sp_500
+plot.ts(sp_500)
+plot(sp_500,xlab="Date", ylab = "Passenger numbers (1000's)",main="Air Passenger numbers from 1949 to 1961")
+
+```
+
+```{r}
+boxplot(sp_500~cycle(sp_500),xlab="Date", ylab = "Closing price of the stock market" ,main ="Monthly closing price ")
+```
+```{r}
+decompose_data = decompose(sp_500,"multiplicative")
+plot(decompose_data)
+```
+
+```{r}
+adf.test(sp_500)
+autoplot(acf(sp_500,plot=FALSE))+ labs(title="Correlogram from 1995 to 2015") 
+
+```
+
+```{r}
+sp500SMA<- SMA(sp_500, n=3)
+plot.ts(sp500SMA)
+```
+
+```{r}
+sp_500
+summary(sp_500)
+cycle(sp_500)
+#autoplot(sp_500) + geom_smooth(method="lm")+ labs(x ="Date", y ="Open", title="air")
+class(sp_500)
+sum(is.na(sp_500))
+
+```
+```{r}
+plot.ts(sp_500)+abline(reg=lm(sp_500~time(sp_500)),col="blue")
+```
+
+```{r}
+arimaAP <- auto.arima(sp_500)
+summary(arimaAP)
+```
+* Finally we can plot a forecast of the time series using the forecast function, again from the forecast R package, with a 90% confidence interval where h is the forecast horizon periods in months.
+```{r}
+forecastAP <- forecast(arimaAP, level = c(90), h = 12)
+autoplot(forecastAP)
+```
+
+
+
+
